@@ -72,7 +72,33 @@ const countryToRegion: Record<string, Region> = {
   'Kenya': 'Africa',
 };
 
-function getRegion(country: string): Region {
+// Map region string to Region type
+const regionNameMap: Record<string, Region> = {
+  'asia': 'Asia',
+  'africa': 'Africa',
+  'east europe': 'East Europe',
+  'west europe': 'West Europe',
+  'north america': 'North America',
+  'south america': 'South America',
+  'mid east': 'Mid East',
+  'middle east': 'Mid East',
+};
+
+function getRegion(country: string, regionFromData?: string): Region {
+  // First try to use the region from the data
+  if (regionFromData) {
+    const normalized = regionFromData.toLowerCase().trim();
+    if (regionNameMap[normalized]) {
+      return regionNameMap[normalized];
+    }
+    // Try partial match
+    for (const [key, value] of Object.entries(regionNameMap)) {
+      if (normalized.includes(key) || key.includes(normalized)) {
+        return value;
+      }
+    }
+  }
+  // Fall back to country mapping
   return countryToRegion[country] || 'Asia';
 }
 
@@ -87,21 +113,30 @@ function getQuarterLabel(date: Date): string {
   return `Q${quarter} ${date.getFullYear()}`;
 }
 
-// Process column name variations
-function normalizeColumnName(name: string): string {
-  return name.toLowerCase().trim().replace(/\s+/g, '_');
+// Find column by checking if header contains any of the possible names
+function findColumnByHeader(headers: string[], possibleNames: string[]): string | null {
+  const normalizedHeaders = headers.map(h => h.toLowerCase().trim().replace(/\s+/g, ' '));
+
+  for (const name of possibleNames) {
+    const normalizedName = name.toLowerCase().trim();
+
+    // Exact match first
+    const exactIdx = normalizedHeaders.findIndex(h => h === normalizedName);
+    if (exactIdx !== -1) return headers[exactIdx];
+
+    // Then try contains
+    const containsIdx = normalizedHeaders.findIndex(h =>
+      h.includes(normalizedName) || normalizedName.includes(h)
+    );
+    if (containsIdx !== -1) return headers[containsIdx];
+  }
+  return null;
 }
 
-// Find column by possible names
-function findColumn(headers: string[], possibleNames: string[]): number {
-  for (const name of possibleNames) {
-    const idx = headers.findIndex(h =>
-      normalizeColumnName(h) === normalizeColumnName(name) ||
-      normalizeColumnName(h).includes(normalizeColumnName(name))
-    );
-    if (idx !== -1) return idx;
-  }
-  return -1;
+// Get value from row by column name
+function getValue(row: Record<string, unknown>, columnName: string | null): unknown {
+  if (!columnName) return undefined;
+  return row[columnName];
 }
 
 // Process the Excel file
@@ -132,12 +167,18 @@ export async function processExcelFile(
         const workbook = XLSX.read(data, { type: 'array' });
         onProgress?.(70);
 
-        // Try to find the main data sheet
+        // Try to find the main data sheet - prioritize _Data sheets for Terebinth files
         let sheet: XLSX.WorkSheet | null = null;
         let sheetName = '';
 
-        // Look for sheets with common names
-        const preferredSheets = ['Data', 'Holdings', 'Portfolio', 'Sheet1', 'Top50', 'Positioning'];
+        // Look for sheets with preferred names (order matters)
+        const preferredSheets = [
+          'EM_Data', 'DM_Data',           // Terebinth data sheets
+          'EM_Solver', 'DM_Solver',       // Terebinth solver sheets
+          'Data', 'Holdings', 'Portfolio',
+          'Sheet1', 'Top50', 'Positioning'
+        ];
+
         for (const name of preferredSheets) {
           if (workbook.SheetNames.includes(name)) {
             sheet = workbook.Sheets[name];
@@ -156,6 +197,7 @@ export async function processExcelFile(
           throw new Error('No valid sheet found in the workbook');
         }
 
+        console.log('Processing sheet:', sheetName);
         onProgress?.(80);
 
         // Convert sheet to JSON
@@ -167,64 +209,125 @@ export async function processExcelFile(
 
         // Get headers from first row
         const headers = Object.keys(jsonData[0]);
+        console.log('Found headers:', headers.slice(0, 15));
 
-        // Find relevant columns
-        const tickerCol = findColumn(headers, ['ticker', 'symbol', 'code', 'security_id', 'sedol', 'isin']);
-        const nameCol = findColumn(headers, ['name', 'company', 'security_name', 'company_name', 'stock_name']);
-        const countryCol = findColumn(headers, ['country', 'domicile', 'country_name']);
-        const sectorCol = findColumn(headers, ['sector', 'gics_sector', 'industry_sector']);
-        const portfolioWtCol = findColumn(headers, ['portfolio_weight', 'portfolio_wt', 'port_weight', 'weight', 'port_wgt', 'active_weight']);
-        const benchmarkWtCol = findColumn(headers, ['benchmark_weight', 'bmk_weight', 'bench_weight', 'bmk_wt', 'index_weight']);
-        const marketCapCol = findColumn(headers, ['market_cap', 'marketcap', 'mkt_cap', 'market_value']);
-        const priceCol = findColumn(headers, ['price', 'last_price', 'close_price']);
-        const alphaCol = findColumn(headers, ['alpha', 'alpha_score', 'score', 'mfm_score']);
+        // Find relevant columns using flexible matching
+        const tickerCol = findColumnByHeader(headers, [
+          'Symbol', 'Stock', 'Ticker', 'Ticker Symbol',
+          'ticker', 'symbol', 'code', 'security_id', 'sedol', 'isin'
+        ]);
+
+        const nameCol = findColumnByHeader(headers, [
+          'Name', 'Company', 'Security Name', 'Company Name',
+          'name', 'company', 'security_name', 'company_name', 'stock_name'
+        ]);
+
+        const regionCol = findColumnByHeader(headers, [
+          'Region', 'region'
+        ]);
+
+        const countryCol = findColumnByHeader(headers, [
+          'Country', 'ISO Code Local', 'Domicile',
+          'country', 'domicile', 'country_name'
+        ]);
+
+        const sectorCol = findColumnByHeader(headers, [
+          'FactSet Econ Sector', 'Sector', 'GICS Sector',
+          'sector', 'gics_sector', 'industry_sector'
+        ]);
+
+        const portfolioWtCol = findColumnByHeader(headers, [
+          'Final Port', 'Final Raw Weights', 'Port', 'Raw Port',
+          'Portfolio Weight', 'portfolio_weight', 'portfolio_wt',
+          'port_weight', 'weight', 'port_wgt'
+        ]);
+
+        const benchmarkWtCol = findColumnByHeader(headers, [
+          'Benchmark', 'BM2', 'BM1', 'Bmk',
+          'benchmark_weight', 'bmk_weight', 'bench_weight',
+          'bmk_wt', 'index_weight'
+        ]);
+
+        const marketCapCol = findColumnByHeader(headers, [
+          'MktVal Co', 'Market Cap', 'MarketCap',
+          'market_cap', 'marketcap', 'mkt_cap', 'market_value'
+        ]);
+
+        const priceCol = findColumnByHeader(headers, [
+          'Closing Price (0)', 'Price', 'Last Price', 'Close Price',
+          'price', 'last_price', 'close_price'
+        ]);
+
+        const alphaCol = findColumnByHeader(headers, [
+          'Alpha Score', 'Alpha', 'Score', 'MFM Score',
+          'alpha', 'alpha_score', 'score', 'mfm_score'
+        ]);
+
+        console.log('Column mapping:', {
+          ticker: tickerCol,
+          name: nameCol,
+          region: regionCol,
+          country: countryCol,
+          sector: sectorCol,
+          portfolioWt: portfolioWtCol,
+          benchmarkWt: benchmarkWtCol,
+          alpha: alphaCol
+        });
 
         // Build holdings array
         const holdings: Stock[] = [];
 
         for (const row of jsonData) {
-          const values = Object.values(row);
-
           // Get ticker - required
-          const ticker = tickerCol >= 0 ? String(values[tickerCol] || '') : '';
-          if (!ticker || ticker === '') continue;
+          const tickerValue = getValue(row, tickerCol);
+          const ticker = tickerValue ? String(tickerValue).trim() : '';
+          if (!ticker || ticker === '' || ticker === 'undefined') continue;
 
           // Get other fields with defaults
-          const name = nameCol >= 0 ? String(values[nameCol] || ticker) : ticker;
-          const country = countryCol >= 0 ? String(values[countryCol] || 'Unknown') : 'Unknown';
-          const sector = sectorCol >= 0 ? String(values[sectorCol] || 'Other') : 'Other';
+          const nameValue = getValue(row, nameCol);
+          const name = nameValue ? String(nameValue).trim() : ticker;
 
+          const regionValue = getValue(row, regionCol);
+          const regionStr = regionValue ? String(regionValue).trim() : '';
+
+          const countryValue = getValue(row, countryCol);
+          const country = countryValue ? String(countryValue).trim() : 'Unknown';
+
+          const sectorValue = getValue(row, sectorCol);
+          const sector = sectorValue ? String(sectorValue).trim() : 'Other';
+
+          // Parse numeric values
           let portfolioWeight = 0;
-          if (portfolioWtCol >= 0) {
-            const pwt = values[portfolioWtCol];
-            portfolioWeight = typeof pwt === 'number' ? pwt : parseFloat(String(pwt)) || 0;
+          const pwtValue = getValue(row, portfolioWtCol);
+          if (pwtValue !== undefined && pwtValue !== '') {
+            portfolioWeight = typeof pwtValue === 'number' ? pwtValue : parseFloat(String(pwtValue)) || 0;
           }
 
           let benchmarkWeight = 0;
-          if (benchmarkWtCol >= 0) {
-            const bwt = values[benchmarkWtCol];
-            benchmarkWeight = typeof bwt === 'number' ? bwt : parseFloat(String(bwt)) || 0;
+          const bwtValue = getValue(row, benchmarkWtCol);
+          if (bwtValue !== undefined && bwtValue !== '') {
+            benchmarkWeight = typeof bwtValue === 'number' ? bwtValue : parseFloat(String(bwtValue)) || 0;
           }
 
           let marketCap = 0;
-          if (marketCapCol >= 0) {
-            const mc = values[marketCapCol];
-            marketCap = typeof mc === 'number' ? mc : parseFloat(String(mc)) || 0;
+          const mcValue = getValue(row, marketCapCol);
+          if (mcValue !== undefined && mcValue !== '') {
+            marketCap = typeof mcValue === 'number' ? mcValue : parseFloat(String(mcValue)) || 0;
           }
 
           let price = 0;
-          if (priceCol >= 0) {
-            const pr = values[priceCol];
-            price = typeof pr === 'number' ? pr : parseFloat(String(pr)) || 0;
+          const prValue = getValue(row, priceCol);
+          if (prValue !== undefined && prValue !== '') {
+            price = typeof prValue === 'number' ? prValue : parseFloat(String(prValue)) || 0;
           }
 
           let alphaScore = 0;
-          if (alphaCol >= 0) {
-            const as = values[alphaCol];
-            alphaScore = typeof as === 'number' ? as : parseFloat(String(as)) || 0;
+          const asValue = getValue(row, alphaCol);
+          if (asValue !== undefined && asValue !== '') {
+            alphaScore = typeof asValue === 'number' ? asValue : parseFloat(String(asValue)) || 0;
           }
 
-          // Normalize weights (if they're in percentage form)
+          // Normalize weights (if they're in percentage form > 1)
           if (portfolioWeight > 1) portfolioWeight = portfolioWeight / 100;
           if (benchmarkWeight > 1) benchmarkWeight = benchmarkWeight / 100;
 
@@ -233,7 +336,7 @@ export async function processExcelFile(
             name,
             ticker,
             country,
-            region: getRegion(country),
+            region: getRegion(country, regionStr),
             sector,
             marketCap,
             price,
@@ -245,8 +348,10 @@ export async function processExcelFile(
           });
         }
 
+        console.log('Parsed holdings count:', holdings.length);
+
         if (holdings.length === 0) {
-          throw new Error('No valid holdings found in the file');
+          throw new Error('No valid holdings found in the file. Please ensure the file has columns for Stock/Symbol and weights.');
         }
 
         onProgress?.(90);
@@ -332,6 +437,7 @@ export async function processExcelFile(
         onProgress?.(100);
         resolve(snapshot);
       } catch (error) {
+        console.error('Excel processing error:', error);
         reject(error instanceof Error ? error : new Error('Failed to process Excel file'));
       }
     };
