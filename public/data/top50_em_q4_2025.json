@@ -1,0 +1,468 @@
+{
+  "marketType": "EM",
+  "quarterLabel": "Q4 2025",
+  "snapshotDate": "2025-09-30",
+  "statistics": {
+    "alphaScore": 2.034,
+    "activeShare": 0.9446,
+    "numberOfStocks": 62,
+    "effectiveNumberOfStocks": 33.28,
+    "volatility": 0.1433,
+    "trackingError": 0.0618
+  },
+  "holdings": [
+    {
+      "rank": 1,
+      "ticker": "000660-KR",
+      "symbol": "000660-KR",
+      "name": "000660-KR",
+      "benchmarkWeight": 0.016445652096489953,
+      "portfolioWeight": 0.07965213211448341,
+      "activeWeight": 0.06320648001799345
+    },
+    {
+      "rank": 2,
+      "ticker": "ANTM-ID",
+      "symbol": "ANTM-ID",
+      "name": "ANTM-ID",
+      "benchmarkWeight": 0.0001607296227795621,
+      "portfolioWeight": 0.06553929542773851,
+      "activeWeight": 0.06537856580495895
+    },
+    {
+      "rank": 3,
+      "ticker": "GFI-ZA",
+      "symbol": "GFI-ZA",
+      "name": "GFI-ZA",
+      "benchmarkWeight": 0.004642765449641291,
+      "portfolioWeight": 0.053328200038183574,
+      "activeWeight": 0.048685434588542284
+    },
+    {
+      "rank": 4,
+      "ticker": "MTEL-HU",
+      "symbol": "MTEL-HU",
+      "name": "MTEL-HU",
+      "benchmarkWeight": 0.00019610789942913645,
+      "portfolioWeight": 0.05309620046668304,
+      "activeWeight": 0.052900092567253906
+    },
+    {
+      "rank": 5,
+      "ticker": "UNIP6-BR",
+      "symbol": "UNIP6-BR",
+      "name": "UNIP6-BR",
+      "benchmarkWeight": 9.774658482004961e-05,
+      "portfolioWeight": 0.043470422303085704,
+      "activeWeight": 0.043372675718265655
+    },
+    {
+      "rank": 6,
+      "ticker": "402340-KR",
+      "symbol": "402340-KR",
+      "name": "402340-KR",
+      "benchmarkWeight": 0.0015499487960262115,
+      "portfolioWeight": 0.03408066769686553,
+      "activeWeight": 0.03253071890083932
+    },
+    {
+      "rank": 7,
+      "ticker": "300502-CN",
+      "symbol": "300502-CN",
+      "name": "300502-CN",
+      "benchmarkWeight": 0.0004168142620965165,
+      "portfolioWeight": 0.03305483393134264,
+      "activeWeight": 0.03263801966924612
+    },
+    {
+      "rank": 8,
+      "ticker": "SBSP3-BR",
+      "symbol": "SBSP3-BR",
+      "name": "SBSP3-BR",
+      "benchmarkWeight": 0.001371930991289662,
+      "portfolioWeight": 0.029327987857164218,
+      "activeWeight": 0.027956056865874556
+    },
+    {
+      "rank": 9,
+      "ticker": "532234-IN",
+      "symbol": "532234-IN",
+      "name": "532234-IN",
+      "benchmarkWeight": 0.0002425345182965745,
+      "portfolioWeight": 0.027339104663397118,
+      "activeWeight": 0.027096570145100543
+    },
+    {
+      "rank": 10,
+      "ticker": "6669-TW",
+      "symbol": "6669-TW",
+      "name": "6669-TW",
+      "benchmarkWeight": 0.0013801028389370624,
+      "portfolioWeight": 0.025309899513332193,
+      "activeWeight": 0.02392979667439513
+    },
+    {
+      "rank": 11,
+      "ticker": "3017-TW",
+      "symbol": "3017-TW",
+      "name": "3017-TW",
+      "benchmarkWeight": 0.0012588495747755059,
+      "portfolioWeight": 0.0228578694298402,
+      "activeWeight": 0.021599019855064697
+    },
+    {
+      "rank": 12,
+      "ticker": "278470-KR",
+      "symbol": "278470-KR",
+      "name": "278470-KR",
+      "benchmarkWeight": 0.0005415256874615784,
+      "portfolioWeight": 0.02147335537576319,
+      "activeWeight": 0.020931829688301613
+    },
+    {
+      "rank": 13,
+      "ticker": "2360-TW",
+      "symbol": "2360-TW",
+      "name": "2360-TW",
+      "benchmarkWeight": 0.0008613329997829391,
+      "portfolioWeight": 0.021429659603718943,
+      "activeWeight": 0.020568326603936003
+    },
+    {
+      "rank": 14,
+      "ticker": "298040-KR",
+      "symbol": "298040-KR",
+      "name": "298040-KR",
+      "benchmarkWeight": 0.0006084638835881129,
+      "portfolioWeight": 0.02039764141732845,
+      "activeWeight": 0.019789177533740338
+    },
+    {
+      "rank": 15,
+      "ticker": "300274-CN",
+      "symbol": "300274-CN",
+      "name": "300274-CN",
+      "benchmarkWeight": 0.0004157821318304502,
+      "portfolioWeight": 0.020192825555941634,
+      "activeWeight": 0.019777043424111185
+    },
+    {
+      "rank": 16,
+      "ticker": "002380-KR",
+      "symbol": "002380-KR",
+      "name": "002380-KR",
+      "benchmarkWeight": 0.00012421460333857898,
+      "portfolioWeight": 0.01911398122187006,
+      "activeWeight": 0.01898976661853148
+    },
+    {
+      "rank": 17,
+      "ticker": "012450-KR",
+      "symbol": "012450-KR",
+      "name": "012450-KR",
+      "benchmarkWeight": 0.0032655336822173357,
+      "portfolioWeight": 0.017780126666487484,
+      "activeWeight": 0.014514592984270148
+    },
+    {
+      "rank": 18,
+      "ticker": "EMAARDEV-AE",
+      "symbol": "EMAARDEV-AE",
+      "name": "EMAARDEV-AE",
+      "benchmarkWeight": 0.00035015316670576325,
+      "portfolioWeight": 0.01681772431777433,
+      "activeWeight": 0.016467571151068568
+    },
+    {
+      "rank": 19,
+      "ticker": "6139-TW",
+      "symbol": "6139-TW",
+      "name": "6139-TW",
+      "benchmarkWeight": 0.00022846273414839385,
+      "portfolioWeight": 0.01659884416298331,
+      "activeWeight": 0.016370381428834915
+    },
+    {
+      "rank": 20,
+      "ticker": "2404-TW",
+      "symbol": "2404-TW",
+      "name": "2404-TW",
+      "benchmarkWeight": 0.0005694689525111993,
+      "portfolioWeight": 0.0163951756710969,
+      "activeWeight": 0.015825706718585703
+    },
+    {
+      "rank": 21,
+      "ticker": "BSE-IN",
+      "symbol": "BSE-IN",
+      "name": "BSE-IN",
+      "benchmarkWeight": 0.0005775424853774181,
+      "portfolioWeight": 0.016056719953808005,
+      "activeWeight": 0.015479177468430588
+    },
+    {
+      "rank": 22,
+      "ticker": "300308-CN",
+      "symbol": "300308-CN",
+      "name": "300308-CN",
+      "benchmarkWeight": 0.0005491613521825912,
+      "portfolioWeight": 0.015409011151834656,
+      "activeWeight": 0.014859849799652065
+    },
+    {
+      "rank": 23,
+      "ticker": "FALABELLA-CL",
+      "symbol": "FALABELLA-CL",
+      "name": "FALABELLA-CL",
+      "benchmarkWeight": 0.0006226899624641462,
+      "portfolioWeight": 0.014582472342533806,
+      "activeWeight": 0.01395978238006966
+    },
+    {
+      "rank": 24,
+      "ticker": "EMAAR-AE",
+      "symbol": "EMAAR-AE",
+      "name": "EMAAR-AE",
+      "benchmarkWeight": 0.0026972133682360965,
+      "portfolioWeight": 0.01454644350323176,
+      "activeWeight": 0.011849230134995663
+    },
+    {
+      "rank": 25,
+      "ticker": "2345-TW",
+      "symbol": "2345-TW",
+      "name": "2345-TW",
+      "benchmarkWeight": 0.0020870928281022565,
+      "portfolioWeight": 0.013804324293237235,
+      "activeWeight": 0.011717231465134977
+    },
+    {
+      "rank": 26,
+      "ticker": "543530-IN",
+      "symbol": "543530-IN",
+      "name": "543530-IN",
+      "benchmarkWeight": 0.00010558517684771254,
+      "portfolioWeight": 0.013196755553921947,
+      "activeWeight": 0.013091170377074236
+    },
+    {
+      "rank": 27,
+      "ticker": "CIB-US",
+      "symbol": "CIB-US",
+      "name": "CIB-US",
+      "benchmarkWeight": 0.000597575084218173,
+      "portfolioWeight": 0.012772194913201505,
+      "activeWeight": 0.012174619828983331
+    },
+    {
+      "rank": 28,
+      "ticker": "500104-IN",
+      "symbol": "500104-IN",
+      "name": "500104-IN",
+      "benchmarkWeight": 0.0005827823833197923,
+      "portfolioWeight": 0.0121864125611701,
+      "activeWeight": 0.011603630177850308
+    },
+    {
+      "rank": 29,
+      "ticker": "BOCHGR-GR",
+      "symbol": "BOCHGR-GR",
+      "name": "BOCHGR-GR",
+      "benchmarkWeight": 0.0003876366392234465,
+      "portfolioWeight": 0.012049257920741125,
+      "activeWeight": 0.011661621281517678
+    },
+    {
+      "rank": 30,
+      "ticker": "6196-TW",
+      "symbol": "6196-TW",
+      "name": "6196-TW",
+      "benchmarkWeight": 0.00010437635987497459,
+      "portfolioWeight": 0.010761285801628774,
+      "activeWeight": 0.0106569094417538
+    },
+    {
+      "rank": 31,
+      "ticker": "ICT-PH",
+      "symbol": "ICT-PH",
+      "name": "ICT-PH",
+      "benchmarkWeight": 0.0010923760595964987,
+      "portfolioWeight": 0.009968319298557496,
+      "activeWeight": 0.008875943238960998
+    },
+    {
+      "rank": 32,
+      "ticker": "TKG-ZA",
+      "symbol": "TKG-ZA",
+      "name": "TKG-ZA",
+      "benchmarkWeight": 0.00011614019578580743,
+      "portfolioWeight": 0.009519808489205828,
+      "activeWeight": 0.009403668293420021
+    },
+    {
+      "rank": 33,
+      "ticker": "543333-IN",
+      "symbol": "543333-IN",
+      "name": "543333-IN",
+      "benchmarkWeight": 0.00015097249301837082,
+      "portfolioWeight": 0.009435021460851645,
+      "activeWeight": 0.009284048967833275
+    },
+    {
+      "rank": 34,
+      "ticker": "600415-CN",
+      "symbol": "600415-CN",
+      "name": "600415-CN",
+      "benchmarkWeight": 0.0001076676308625571,
+      "portfolioWeight": 0.009405609897509984,
+      "activeWeight": 0.009297942266647426
+    },
+    {
+      "rank": 35,
+      "ticker": "534091-IN",
+      "symbol": "534091-IN",
+      "name": "534091-IN",
+      "benchmarkWeight": 0.00025258099440692066,
+      "portfolioWeight": 0.009291322688775501,
+      "activeWeight": 0.009038741694368581
+    },
+    {
+      "rank": 36,
+      "ticker": "DRD-ZA",
+      "symbol": "DRD-ZA",
+      "name": "DRD-ZA",
+      "benchmarkWeight": 0.00015748488512272346,
+      "portfolioWeight": 0.009154279241969175,
+      "activeWeight": 0.008996794356846452
+    },
+    {
+      "rank": 37,
+      "ticker": "543945-IN",
+      "symbol": "543945-IN",
+      "name": "543945-IN",
+      "benchmarkWeight": 9.106345387848944e-05,
+      "portfolioWeight": 0.009089780635731938,
+      "activeWeight": 0.008998717181853449
+    },
+    {
+      "rank": 38,
+      "ticker": "522275-IN",
+      "symbol": "522275-IN",
+      "name": "522275-IN",
+      "benchmarkWeight": 0.0004744662597629353,
+      "portfolioWeight": 0.009011436646255732,
+      "activeWeight": 0.008536970386492797
+    },
+    {
+      "rank": 39,
+      "ticker": "2615-TW",
+      "symbol": "2615-TW",
+      "name": "2615-TW",
+      "benchmarkWeight": 0.0002570922783563994,
+      "portfolioWeight": 0.008848186616797649,
+      "activeWeight": 0.00859109433844125
+    },
+    {
+      "rank": 40,
+      "ticker": "009540-KR",
+      "symbol": "009540-KR",
+      "name": "009540-KR",
+      "benchmarkWeight": 0.0015912137139392287,
+      "portfolioWeight": 0.008609139032366896,
+      "activeWeight": 0.007017925318427667
+    },
+    {
+      "rank": 41,
+      "ticker": "003230-KR",
+      "symbol": "003230-KR",
+      "name": "003230-KR",
+      "benchmarkWeight": 0.0005475828926248174,
+      "portfolioWeight": 0.00837190750463589,
+      "activeWeight": 0.007824324612011073
+    },
+    {
+      "rank": 42,
+      "ticker": "316140-KR",
+      "symbol": "316140-KR",
+      "name": "316140-KR",
+      "benchmarkWeight": 0.0015250034320561962,
+      "portfolioWeight": 0.008311215990292057,
+      "activeWeight": 0.006786212558235861
+    },
+    {
+      "rank": 43,
+      "ticker": "543349-IN",
+      "symbol": "543349-IN",
+      "name": "543349-IN",
+      "benchmarkWeight": 0.00010831962230344542,
+      "portfolioWeight": 0.0080947671875333,
+      "activeWeight": 0.007986447565229855
+    },
+    {
+      "rank": 44,
+      "ticker": "079550-KR",
+      "symbol": "079550-KR",
+      "name": "079550-KR",
+      "benchmarkWeight": 0.0005502471882099892,
+      "portfolioWeight": 0.007681208611197281,
+      "activeWeight": 0.007130961422987292
+    },
+    {
+      "rank": 45,
+      "ticker": "500547-IN",
+      "symbol": "500547-IN",
+      "name": "500547-IN",
+      "benchmarkWeight": 0.0009088046942790845,
+      "portfolioWeight": 0.007440966333663624,
+      "activeWeight": 0.006532161639384539
+    },
+    {
+      "rank": 46,
+      "ticker": "6223-TW",
+      "symbol": "6223-TW",
+      "name": "6223-TW",
+      "benchmarkWeight": 0.0005757506022731035,
+      "portfolioWeight": 0.007218415403951949,
+      "activeWeight": 0.006642664801678845
+    },
+    {
+      "rank": 47,
+      "ticker": "300604-CN",
+      "symbol": "300604-CN",
+      "name": "300604-CN",
+      "benchmarkWeight": 5.943618352816348e-05,
+      "portfolioWeight": 0.007106052933295789,
+      "activeWeight": 0.007046616749767625
+    },
+    {
+      "rank": 48,
+      "ticker": "6805-TW",
+      "symbol": "6805-TW",
+      "name": "6805-TW",
+      "benchmarkWeight": 0.0002193213838002037,
+      "portfolioWeight": 0.007005609370360693,
+      "activeWeight": 0.006786287986560489
+    },
+    {
+      "rank": 49,
+      "ticker": "540222-IN",
+      "symbol": "540222-IN",
+      "name": "540222-IN",
+      "benchmarkWeight": 0.0004126066693574941,
+      "portfolioWeight": 0.006400260082532448,
+      "activeWeight": 0.005987653413174954
+    },
+    {
+      "rank": 50,
+      "ticker": "214450-KR",
+      "symbol": "214450-KR",
+      "name": "214450-KR",
+      "benchmarkWeight": 0.0003520416152180284,
+      "portfolioWeight": 0.006112739550828576,
+      "activeWeight": 0.005760697935610548
+    }
+  ],
+  "sectorAllocations": [],
+  "countryAllocations": [],
+  "regionAllocations": []
+}
