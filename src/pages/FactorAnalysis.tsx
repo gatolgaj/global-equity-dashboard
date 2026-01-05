@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
 import { FactorRadarChart } from '../components/charts/FactorRadarChart';
 import { FactorBarChart } from '../components/charts/FactorBarChart';
 import { SectorFactorHeatmap } from '../components/charts/SectorFactorHeatmap';
 import { PortfolioTreemap } from '../components/charts/PortfolioTreemap';
 import { StockFactorExplorer } from '../components/charts/StockFactorExplorer';
+import { UploadModal } from '../components/modules/UploadModal';
 import { localDataApi, type FactorData, type FactorHolding } from '../services/api';
 import { TrendingUp, Grid3X3, PieChart, Search } from 'lucide-react';
 
@@ -17,6 +19,7 @@ export function FactorAnalysis() {
   const [activeTab, setActiveTab] = useState<ViewTab>('overview');
   const [treemapGroupBy, setTreemapGroupBy] = useState<'sector' | 'region' | 'country'>('sector');
   const [treemapColorBy, setTreemapColorBy] = useState<'weight' | 'activeWeight' | 'mfm'>('weight');
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -47,10 +50,16 @@ export function FactorAnalysis() {
 
   if (error || !factorData) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center text-red-500">
-          <p>{error || 'Failed to load data'}</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
+        <EmptyState
+          title="No Factor Data"
+          description="Upload your portfolio Excel file to view factor exposures, heatmaps, and stock-level analysis."
+          onUploadClick={() => setIsUploadModalOpen(true)}
+        />
+        <UploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+        />
       </div>
     );
   }

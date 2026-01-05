@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { Card, KPICard, StatCard } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
 import { AllocationChart, ActiveWeightChart } from '../components/charts/AllocationChart';
 import { HoldingsTable } from '../components/charts/HoldingsTable';
 import { PerformanceChart } from '../components/charts/PerformanceChart';
@@ -102,6 +103,23 @@ export function Overview() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terebinth-primary mx-auto"></div>
           <p className="mt-4 text-gray-500">Loading dashboard data...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no data loaded
+  if (!currentSnapshot && !performanceData) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
+        <EmptyState
+          title="No Portfolio Data"
+          description="Upload your portfolio Excel file to view the dashboard with holdings, allocations, and performance metrics."
+          onUploadClick={() => setIsUploadModalOpen(true)}
+        />
+        <UploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+        />
       </div>
     );
   }

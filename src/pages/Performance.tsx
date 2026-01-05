@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, StatCard } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
 import { PerformanceChart } from '../components/charts/PerformanceChart';
 import { RollingMetricChart } from '../components/charts/RollingMetricChart';
+import { UploadModal } from '../components/modules/UploadModal';
 import { usePortfolioStore } from '../stores/portfolioStore';
 import { localDataApi, type PerformanceRiskData } from '../services/api';
 import { formatPercent } from '../utils/formatters';
@@ -13,6 +15,7 @@ export function Performance() {
   const [performanceData, setPerformanceData] = useState<PerformanceRiskData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Memoize derived data to prevent infinite loops
   const statistics = useMemo(
@@ -113,12 +116,18 @@ export function Performance() {
     );
   }
 
-  if (error) {
+  if (error || !performanceData) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center text-red-500">
-          <p>{error}</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
+        <EmptyState
+          title="No Performance Data"
+          description="Upload your portfolio Excel file to view historical performance, risk metrics, and rolling analytics."
+          onUploadClick={() => setIsUploadModalOpen(true)}
+        />
+        <UploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+        />
       </div>
     );
   }

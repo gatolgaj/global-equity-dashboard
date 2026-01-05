@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
 import { AllocationChart, ActiveWeightChart } from '../components/charts/AllocationChart';
 import { CompositionTimeSeriesChart } from '../components/charts/CompositionTimeSeriesChart';
+import { UploadModal } from '../components/modules/UploadModal';
 import { usePortfolioStore } from '../stores/portfolioStore';
 import { localDataApi, type PortfolioCompositionData } from '../services/api';
 import { formatPercent } from '../utils/formatters';
@@ -15,6 +17,7 @@ export function Composition() {
   const [categoryType, setCategoryType] = useState<CategoryType>('region');
   const [compositionData, setCompositionData] = useState<PortfolioCompositionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Load composition data on mount
   useEffect(() => {
@@ -92,6 +95,23 @@ export function Composition() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terebinth-primary mx-auto"></div>
           <p className="mt-4 text-gray-500">Loading composition data...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no data loaded
+  if (!currentSnapshot && !compositionData) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
+        <EmptyState
+          title="No Composition Data"
+          description="Upload your portfolio Excel file to view sector, country, and region allocations over time."
+          onUploadClick={() => setIsUploadModalOpen(true)}
+        />
+        <UploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+        />
       </div>
     );
   }
