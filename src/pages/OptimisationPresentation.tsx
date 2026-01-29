@@ -349,6 +349,70 @@ function ScoreWeightSlide() {
   );
 }
 
+// ─── Slide 5b: Score vs Active Weight ────────────────────────────────────────
+function ScoreActiveWeightSlide() {
+  const scenario = useOptimisationStore((s) => s.currentScenario);
+  const stocks = scenario?.stocks || [];
+
+  const sectors = useMemo(() => {
+    const map = new Map<string, OptStock[]>();
+    stocks.forEach((s) => { const list = map.get(s.sector) || []; list.push(s); map.set(s.sector, list); });
+    return map;
+  }, [stocks]);
+
+  const series: Highcharts.SeriesScatterOptions[] = Array.from(sectors.entries()).map(([sector, ss]) => ({
+    name: sector,
+    type: 'scatter' as const,
+    color: getSectorColor(sector),
+    data: ss.map((s) => ({
+      x: s.score,
+      y: s.activeWeight * 100,
+      name: s.ticker,
+      marker: { radius: Math.max(3, Math.min(12, Math.abs(s.optimalWeight) * 500)) },
+    })),
+  }));
+
+  const options: Highcharts.Options = {
+    chart: { type: 'scatter', height: 380, style: { fontFamily: 'Inter, sans-serif' }, backgroundColor: 'transparent', zooming: { type: 'xy' } },
+    title: { text: undefined },
+    xAxis: {
+      title: { text: 'Score', style: { color: '#718096', fontWeight: '500' } },
+      gridLineWidth: 1, gridLineColor: '#EDF2F7',
+      labels: { style: { color: '#718096' } },
+      plotLines: [{ value: 0, color: '#CBD5E0', width: 1, dashStyle: 'Dash' }],
+    },
+    yAxis: {
+      title: { text: 'Active Weight (%)', style: { color: '#718096', fontWeight: '500' } },
+      labels: { style: { color: '#718096' } },
+      plotLines: [{ value: 0, color: '#CBD5E0', width: 1, dashStyle: 'Dash' }],
+    },
+    tooltip: {
+      formatter() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ctx = this as any;
+        return `<b>${ctx.point?.name}</b> (${ctx.series.name})<br/>Score: <b>${(ctx.x ?? 0).toFixed(3)}</b><br/>Active Wt: <b>${(ctx.y ?? 0).toFixed(2)}%</b>`;
+      },
+    },
+    legend: { layout: 'vertical', align: 'right', verticalAlign: 'middle', itemStyle: { fontSize: '10px', color: '#4A5568' } },
+    series,
+    credits: { enabled: false },
+  };
+
+  return (
+    <Slide title="Score vs Active Weight" subtitle="Relationship between score and portfolio active positioning">
+      <div className="mt-2">
+        <HighchartsReact highcharts={Highcharts} options={options} />
+      </div>
+      <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+        <p className="text-blue-800">
+          <strong>Key Insight:</strong> High-score stocks are overweighted (positive active weight) while
+          low-score stocks are underweighted, demonstrating the optimiser&apos;s score-driven allocation.
+        </p>
+      </div>
+    </Slide>
+  );
+}
+
 // ─── Slide 6: Top Active Positions ──────────────────────────────────────────
 function TopPositionsSlide() {
   const scenario = useOptimisationStore((s) => s.currentScenario);
@@ -680,6 +744,7 @@ export function OptimisationPresentation() {
       <SectorAllocationSlide key="sector" />,
       <SectorActiveSlide key="active" />,
       <ScoreWeightSlide key="scatter" />,
+      <ScoreActiveWeightSlide key="score-active" />,
       <TopPositionsSlide key="holdings" />,
       <ScenarioComparisonSlide key="scenarios" />,
       <RiskContributionSlide key="risk" />,

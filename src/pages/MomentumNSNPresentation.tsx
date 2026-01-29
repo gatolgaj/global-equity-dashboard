@@ -464,6 +464,70 @@ function ScoreWeightSlide() {
   );
 }
 
+// ─── Slide 6b: Score vs Active Weight ────────────────────────────────────────
+function ScoreActiveWeightSlide() {
+  const scenario = useMomentumNSN();
+  const stocks = scenario?.stocks || [];
+
+  const sectors = useMemo(() => {
+    const map = new Map<string, OptStock[]>();
+    stocks.forEach((s) => { const list = map.get(s.sector) || []; list.push(s); map.set(s.sector, list); });
+    return map;
+  }, [stocks]);
+
+  const series: Highcharts.SeriesScatterOptions[] = Array.from(sectors.entries()).map(([sector, ss]) => ({
+    name: sector,
+    type: 'scatter' as const,
+    color: getSectorColor(sector),
+    data: ss.map((s) => ({
+      x: s.score,
+      y: s.activeWeight * 100,
+      name: s.ticker,
+      marker: { radius: Math.max(3, Math.min(12, Math.abs(s.optimalWeight) * 500)) },
+    })),
+  }));
+
+  const options: Highcharts.Options = {
+    chart: { type: 'scatter', height: 380, style: { fontFamily: 'Inter, sans-serif' }, backgroundColor: 'transparent', zooming: { type: 'xy' } },
+    title: { text: undefined },
+    xAxis: {
+      title: { text: 'Momentum Score', style: { color: '#718096', fontWeight: '500' } },
+      gridLineWidth: 1, gridLineColor: '#EDF2F7',
+      labels: { style: { color: '#718096' } },
+      plotLines: [{ value: 0, color: '#CBD5E0', width: 1, dashStyle: 'Dash' }],
+    },
+    yAxis: {
+      title: { text: 'Active Weight (%)', style: { color: '#718096', fontWeight: '500' } },
+      labels: { style: { color: '#718096' } },
+      plotLines: [{ value: 0, color: '#CBD5E0', width: 1, dashStyle: 'Dash' }],
+    },
+    tooltip: {
+      formatter() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ctx = this as any;
+        return `<b>${ctx.point?.name}</b> (${ctx.series.name})<br/>Momentum: <b>${(ctx.x ?? 0).toFixed(3)}</b><br/>Active Wt: <b>${(ctx.y ?? 0).toFixed(2)}%</b>`;
+      },
+    },
+    legend: { layout: 'vertical', align: 'right', verticalAlign: 'middle', itemStyle: { fontSize: '10px', color: '#4A5568' } },
+    series,
+    credits: { enabled: false },
+  };
+
+  return (
+    <Slide title="Momentum Score vs Active Weight" subtitle="Relationship between momentum score and portfolio active positioning">
+      <div className="mt-2">
+        <HighchartsReact highcharts={Highcharts} options={options} />
+      </div>
+      <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
+        <p className="text-amber-800">
+          <strong>Key Insight:</strong> High-momentum stocks are overweighted (positive active weight) while
+          low-momentum stocks are underweighted, demonstrating the optimiser&apos;s momentum-driven allocation.
+        </p>
+      </div>
+    </Slide>
+  );
+}
+
 // ─── Slide 7: Top Holdings ──────────────────────────────────────────────────
 function TopHoldingsSlide() {
   const scenario = useMomentumNSN();
@@ -823,6 +887,7 @@ export function MomentumNSNPresentation() {
       <SectorActiveSlide key="active" />,
       <MomentumScoreDistributionSlide key="distribution" />,
       <ScoreWeightSlide key="scatter" />,
+      <ScoreActiveWeightSlide key="score-active" />,
       <TopHoldingsSlide key="holdings" />,
       <StrategyComparisonSlide key="comparison" />,
       <RiskContributionSlide key="risk" />,
