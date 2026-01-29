@@ -91,7 +91,7 @@ function TitleSlide() {
         </div>
         <div className="flex items-center justify-center gap-3 mb-4">
           <Zap className="w-10 h-10 text-amber-400" />
-          <h1 className="text-5xl font-bold">Momentum NSN</h1>
+          <h1 className="text-5xl font-bold text-white">Momentum NSN</h1>
         </div>
         <h2 className="text-3xl font-light text-white mb-6">
           Portfolio Optimisation

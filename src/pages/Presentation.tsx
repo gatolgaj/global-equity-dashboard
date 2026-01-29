@@ -54,7 +54,7 @@ function TitleSlide({ quarterLabel }: { quarterLabel: string }) {
             className="h-16 w-auto"
           />
         </div>
-        <h1 className="text-5xl font-bold mb-4">Global Equity Strategy</h1>
+        <h1 className="text-5xl font-bold text-white mb-4">Global Equity Strategy</h1>
         <h2 className="text-3xl font-light text-white mb-8">
           Emerging Markets Portfolio
         </h2>

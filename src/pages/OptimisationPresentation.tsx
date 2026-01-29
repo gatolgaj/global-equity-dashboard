@@ -82,7 +82,7 @@ function TitleSlide() {
         <div className="mx-auto mb-8 p-4 bg-white rounded-2xl shadow-lg">
           <img src="/terebinth-logo.png" alt="Terebinth Capital" className="h-16 w-auto" />
         </div>
-        <h1 className="text-5xl font-bold mb-4">Portfolio Optimisation</h1>
+        <h1 className="text-5xl font-bold text-white mb-4">Portfolio Optimisation</h1>
         <h2 className="text-3xl font-light text-white mb-6">
           Customised Active Risk Management
         </h2>
