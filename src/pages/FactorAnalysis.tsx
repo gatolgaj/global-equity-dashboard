@@ -1,59 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
+import { UploadModal } from '../components/modules/UploadModal';
 import { FactorRadarChart } from '../components/charts/FactorRadarChart';
 import { FactorBarChart } from '../components/charts/FactorBarChart';
 import { SectorFactorHeatmap } from '../components/charts/SectorFactorHeatmap';
 import { PortfolioTreemap } from '../components/charts/PortfolioTreemap';
 import { StockFactorExplorer } from '../components/charts/StockFactorExplorer';
-import { UploadModal } from '../components/modules/UploadModal';
-import { localDataApi, type FactorData, type FactorHolding } from '../services/api';
 import { TrendingUp, Grid3X3, PieChart, Search } from 'lucide-react';
+import { usePortfolioStore } from '../stores/portfolioStore';
 
 type ViewTab = 'overview' | 'heatmap' | 'treemap' | 'explorer';
 
 export function FactorAnalysis() {
-  const [factorData, setFactorData] = useState<FactorData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const factorData = usePortfolioStore((state) => state.factorData);
   const [activeTab, setActiveTab] = useState<ViewTab>('overview');
-  const [treemapGroupBy, setTreemapGroupBy] = useState<'sector' | 'region' | 'country'>('sector');
-  const [treemapColorBy, setTreemapColorBy] = useState<'weight' | 'activeWeight' | 'mfm'>('weight');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const data = await localDataApi.getFactorData();
-        setFactorData(data);
-      } catch (err) {
-        console.error('Failed to load factor data:', err);
-        setError('Failed to load factor data');
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
+  const hasFactorData = factorData && factorData.holdings.length > 0;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terebinth-primary mx-auto"></div>
-          <p className="mt-4 text-gray-500">Loading factor analysis...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !factorData) {
+  if (!hasFactorData) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
         <EmptyState
           title="No Factor Data"
-          description="Upload your portfolio Excel file to view factor exposures, heatmaps, and stock-level analysis."
+          description="Factor analysis requires factor data from the IC_PortfolioComposition file. Upload your factor analysis file to see stock-level factor exposures."
           onUploadClick={() => setIsUploadModalOpen(true)}
         />
         <UploadModal
@@ -63,6 +34,108 @@ export function FactorAnalysis() {
       </div>
     );
   }
+
+  // Convert FactorScores to the format expected by charts
+  const portfolioExposure = {
+    value: factorData.portfolioAverages.value,
+    growth: factorData.portfolioAverages.growth,
+    quality: factorData.portfolioAverages.quality,
+    debt: factorData.portfolioAverages.debt,
+    volatility: factorData.portfolioAverages.volatility,
+    momentum: factorData.portfolioAverages.momentum,
+    size: factorData.portfolioAverages.size,
+    sentiment: factorData.portfolioAverages.sentiment,
+    mfm_score: factorData.portfolioAverages.mfmScore,
+  };
+
+  const benchmarkExposure = {
+    value: factorData.benchmarkAverages.value,
+    growth: factorData.benchmarkAverages.growth,
+    quality: factorData.benchmarkAverages.quality,
+    debt: factorData.benchmarkAverages.debt,
+    volatility: factorData.benchmarkAverages.volatility,
+    momentum: factorData.benchmarkAverages.momentum,
+    size: factorData.benchmarkAverages.size,
+    sentiment: factorData.benchmarkAverages.sentiment,
+    mfm_score: factorData.benchmarkAverages.mfmScore,
+  };
+
+  // Convert sector factors to the format expected by heatmap
+  const sectorHeatmapData = factorData.sectorFactors.map((s) => ({
+    sector: s.sector,
+    count: s.count,
+    totalWeight: s.totalWeight,
+    value: s.value,
+    growth: s.growth,
+    quality: s.quality,
+    debt: s.debt,
+    volatility: s.volatility,
+    momentum: s.momentum,
+    size: s.size,
+    sentiment: s.sentiment,
+    mfm_score: s.mfmScore,
+  }));
+
+  // Convert holdings to the format expected by treemap
+  const treemapData = factorData.holdings.map((h) => ({
+    ticker: h.ticker,
+    company: h.company,
+    sector: h.sector,
+    country: h.country,
+    region: h.region,
+    weight: h.portfolioWeight,
+    activeWeight: h.activeWeight,
+    factors: {
+      value: h.factors.value,
+      growth: h.factors.growth,
+      quality: h.factors.quality,
+      debt: h.factors.debt,
+      volatility: h.factors.volatility,
+      momentum: h.factors.momentum,
+      size: h.factors.size,
+      sentiment: h.factors.sentiment,
+      mfm_score: h.factors.mfmScore,
+    },
+  }));
+
+  // Convert holdings to the format expected by explorer
+  const explorerData = factorData.holdings.map((h, idx) => ({
+    rank: idx + 1,
+    ticker: h.ticker,
+    company: h.company,
+    sector: h.sector,
+    country: h.country,
+    region: h.region,
+    weight: h.portfolioWeight,
+    activeWeight: h.activeWeight,
+    factors: {
+      value: h.factors.value,
+      growth: h.factors.growth,
+      quality: h.factors.quality,
+      debt: h.factors.debt,
+      volatility: h.factors.volatility,
+      momentum: h.factors.momentum,
+      size: h.factors.size,
+      sentiment: h.factors.sentiment,
+      mfm_score: h.factors.mfmScore,
+    },
+  }));
+
+  // Find top factor tilts
+  const factorEntries = [
+    { name: 'Value', value: factorData.portfolioAverages.value },
+    { name: 'Growth', value: factorData.portfolioAverages.growth },
+    { name: 'Quality', value: factorData.portfolioAverages.quality },
+    { name: 'Momentum', value: factorData.portfolioAverages.momentum },
+    { name: 'Sentiment', value: factorData.portfolioAverages.sentiment },
+    { name: 'Size', value: factorData.portfolioAverages.size },
+    { name: 'Volatility', value: factorData.portfolioAverages.volatility },
+    { name: 'Debt', value: factorData.portfolioAverages.debt },
+  ];
+
+  const sortedFactors = [...factorEntries].sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
+  const topPositive = factorEntries.filter(f => f.value > 0.3).sort((a, b) => b.value - a.value)[0];
+  const topNegative = factorEntries.filter(f => f.value < -0.3).sort((a, b) => a.value - b.value)[0];
 
   const tabs: { id: ViewTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'overview', label: 'Factor Overview', icon: TrendingUp },
@@ -81,8 +154,13 @@ export function FactorAnalysis() {
             Deep dive into portfolio factor exposures and characteristics
           </p>
         </div>
-        <div className="text-sm text-gray-500">
-          Last updated: {factorData.lastUpdated}
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+            {factorData.holdings.length} Holdings
+          </span>
+          <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+            As of {factorData.asOfDate}
+          </span>
         </div>
       </div>
 
@@ -104,157 +182,120 @@ export function FactorAnalysis() {
         ))}
       </div>
 
-      {/* Content based on active tab */}
+      {/* Tab content */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Factor Radar Chart */}
-          <Card
-            title="Portfolio Factor Profile"
-            subtitle="Factor tilts relative to neutral (0)"
-          >
-            <FactorRadarChart
-              portfolio={factorData.factorExposures.portfolio}
-              benchmark={factorData.factorExposures.benchmark}
-              height={400}
-              showBenchmark={Object.keys(factorData.factorExposures.benchmark || {}).length > 0}
-            />
-          </Card>
+        <div className="space-y-6">
+          {/* Summary cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <div className="p-4">
+                <div className="text-sm text-gray-500 mb-1">Portfolio MFM Score</div>
+                <div className={`text-3xl font-bold ${
+                  factorData.portfolioAverages.mfmScore >= 5
+                    ? 'text-green-600'
+                    : factorData.portfolioAverages.mfmScore >= 3
+                    ? 'text-blue-600'
+                    : 'text-yellow-600'
+                }`}>
+                  {factorData.portfolioAverages.mfmScore.toFixed(2)}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Multi-Factor Model composite score
+                </div>
+              </div>
+            </Card>
 
-          {/* Factor Bar Chart */}
-          <Card
-            title="Current Factor Exposures"
-            subtitle="Portfolio-weighted average factor scores"
-          >
-            <FactorBarChart
-              factors={factorData.factorExposures.portfolio}
-              height={400}
-              showMFM
-            />
-          </Card>
+            {topPositive && (
+              <Card>
+                <div className="p-4">
+                  <div className="text-sm text-gray-500 mb-1">Strongest Positive Tilt</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-green-600">
+                      +{topPositive.value.toFixed(2)}σ
+                    </span>
+                    <span className="text-gray-600">{topPositive.name}</span>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    Above-average exposure
+                  </div>
+                </div>
+              </Card>
+            )}
 
-          {/* Factor Summary Stats */}
-          <Card title="Factor Exposure Summary" className="lg:col-span-2">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-4">
-              {factorData.factors
-                .filter((f) => f.id !== 'mfm_score')
-                .map((factor) => {
-                  const value = factorData.factorExposures.portfolio[factor.id as keyof typeof factorData.factorExposures.portfolio];
-                  const isPositive = (value ?? 0) >= 0;
-                  const intensity = Math.abs(value ?? 0);
-                  const interpretation =
-                    intensity < 0.5
-                      ? 'Neutral'
-                      : intensity < 1.5
-                      ? isPositive
-                        ? 'Overweight'
-                        : 'Underweight'
-                      : isPositive
-                      ? 'Strong OW'
-                      : 'Strong UW';
+            {topNegative && (
+              <Card>
+                <div className="p-4">
+                  <div className="text-sm text-gray-500 mb-1">Strongest Negative Tilt</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-red-600">
+                      {topNegative.value.toFixed(2)}σ
+                    </span>
+                    <span className="text-gray-600">{topNegative.name}</span>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    Below-average exposure
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
 
-                  return (
-                    <div
-                      key={factor.id}
-                      className={`p-4 rounded-lg border ${
-                        intensity < 0.5
-                          ? 'bg-gray-50 border-gray-200'
-                          : isPositive
-                          ? 'bg-green-50 border-green-200'
-                          : 'bg-red-50 border-red-200'
-                      }`}
-                    >
-                      <div className="text-xs text-gray-500 mb-1">{factor.name}</div>
-                      <div
-                        className={`text-xl font-bold ${
-                          intensity < 0.5
-                            ? 'text-gray-700'
-                            : isPositive
-                            ? 'text-green-600'
-                            : 'text-red-600'
-                        }`}
-                      >
-                        {isPositive ? '+' : ''}
-                        {(value ?? 0).toFixed(2)}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">{interpretation}</div>
-                    </div>
-                  );
-                })}
-            </div>
-          </Card>
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card title="Factor Radar" subtitle="Portfolio factor exposures (σ from benchmark)">
+              <FactorRadarChart
+                portfolio={portfolioExposure}
+                benchmark={benchmarkExposure}
+                height={380}
+                showBenchmark={false}
+              />
+            </Card>
 
-          {/* Top Holdings by MFM Score */}
-          <Card
-            title="Top Holdings by MFM Score"
-            subtitle="Highest multi-factor model scores"
-            className="lg:col-span-2"
-          >
+            <Card title="Factor Tilts" subtitle="Active factor positions in standard deviations">
+              <FactorBarChart
+                factors={portfolioExposure}
+                height={380}
+                showMFM
+              />
+            </Card>
+          </div>
+
+          {/* Factor summary table */}
+          <Card title="Factor Exposure Summary" subtitle="Ranked by absolute exposure magnitude">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 px-3 font-medium text-gray-600">Rank</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-600">Stock</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-600">Weight</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-600">Active</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-600">Value</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-600">Growth</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-600">Quality</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-600">Momentum</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-600">MFM</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Factor</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-600">Portfolio Exposure</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Interpretation</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[...factorData.holdings]
-                    .sort((a, b) => (b.factors?.mfm_score ?? 0) - (a.factors?.mfm_score ?? 0))
-                    .slice(0, 10)
-                    .map((h, idx) => (
-                      <tr key={h.ticker} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-2 px-3 text-gray-500">{idx + 1}</td>
-                        <td className="py-2 px-3">
-                          <div className="font-medium text-gray-900">{h.ticker}</div>
-                          <div className="text-xs text-gray-500 truncate max-w-[150px]">
-                            {h.company}
-                          </div>
+                  {sortedFactors.map((factor, idx) => {
+                    const interpretation =
+                      Math.abs(factor.value) < 0.5
+                        ? 'Neutral'
+                        : factor.value > 1.5
+                        ? 'Strong positive tilt'
+                        : factor.value > 0.5
+                        ? 'Moderate positive tilt'
+                        : factor.value < -1.5
+                        ? 'Strong negative tilt'
+                        : 'Moderate negative tilt';
+
+                    return (
+                      <tr key={factor.name} className={idx % 2 === 0 ? 'bg-gray-50' : ''}>
+                        <td className="py-3 px-4 font-medium">{factor.name}</td>
+                        <td className={`py-3 px-4 text-right font-mono font-medium ${
+                          factor.value >= 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {factor.value >= 0 ? '+' : ''}{factor.value.toFixed(2)}σ
                         </td>
-                        <td className="py-2 px-3 text-right font-mono">
-                          {((h.weight || 0) * 100).toFixed(2)}%
-                        </td>
-                        <td
-                          className={`py-2 px-3 text-right font-mono ${
-                            (h.activeWeight || 0) >= 0 ? 'text-green-600' : 'text-red-600'
-                          }`}
-                        >
-                          {(h.activeWeight || 0) >= 0 ? '+' : ''}
-                          {((h.activeWeight || 0) * 100).toFixed(2)}%
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <FactorBadge value={h.factors?.value} />
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <FactorBadge value={h.factors?.growth} />
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <FactorBadge value={h.factors?.quality} />
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <FactorBadge value={h.factors?.momentum} />
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <span
-                            className={`font-bold ${
-                              (h.factors?.mfm_score ?? 0) >= 5
-                                ? 'text-green-600'
-                                : (h.factors?.mfm_score ?? 0) >= 3
-                                ? 'text-blue-600'
-                                : 'text-yellow-600'
-                            }`}
-                          >
-                            {h.factors?.mfm_score?.toFixed(1) ?? '-'}
-                          </span>
-                        </td>
+                        <td className="py-3 px-4 text-gray-500">{interpretation}</td>
                       </tr>
-                    ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -263,104 +304,27 @@ export function FactorAnalysis() {
       )}
 
       {activeTab === 'heatmap' && (
-        <Card
-          title="Sector Factor Heatmap"
-          subtitle="Average factor exposures by sector (weighted by position)"
-        >
-          <SectorFactorHeatmap data={factorData.sectorFactorHeatmap} height={500} />
+        <Card title="Sector Factor Heatmap" subtitle="Factor exposures by sector (weight-adjusted averages)">
+          <SectorFactorHeatmap data={sectorHeatmapData} height={Math.max(400, sectorHeatmapData.length * 45)} />
         </Card>
       )}
 
       {activeTab === 'treemap' && (
-        <Card
-          title="Portfolio Composition Treemap"
-          subtitle="Interactive visualization of portfolio weights"
-        >
-          <div className="flex flex-wrap gap-4 mb-4">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Group By</label>
-              <div className="flex gap-1">
-                {(['sector', 'region', 'country'] as const).map((group) => (
-                  <button
-                    key={group}
-                    onClick={() => setTreemapGroupBy(group)}
-                    className={`px-3 py-1 text-sm rounded capitalize ${
-                      treemapGroupBy === group
-                        ? 'bg-terebinth-primary text-white'
-                        : 'bg-gray-100 hover:bg-gray-200'
-                    }`}
-                  >
-                    {group}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Color By</label>
-              <div className="flex gap-1">
-                {([
-                  { id: 'weight', label: 'Weight' },
-                  { id: 'activeWeight', label: 'Active Weight' },
-                  { id: 'mfm', label: 'MFM Score' },
-                ] as const).map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setTreemapColorBy(opt.id)}
-                    className={`px-3 py-1 text-sm rounded ${
-                      treemapColorBy === opt.id
-                        ? 'bg-terebinth-secondary text-white'
-                        : 'bg-gray-100 hover:bg-gray-200'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+        <Card title="Portfolio Treemap" subtitle="Holdings visualization by sector and weight">
           <PortfolioTreemap
-            holdings={factorData.holdings as FactorHolding[]}
-            groupBy={treemapGroupBy}
-            colorBy={treemapColorBy}
-            height={550}
+            holdings={treemapData}
+            height={600}
+            groupBy="sector"
+            colorBy="mfm"
           />
         </Card>
       )}
 
       {activeTab === 'explorer' && (
-        <Card
-          title="Stock Factor Explorer"
-          subtitle="Click on any stock to view detailed factor breakdown"
-        >
-          <StockFactorExplorer holdings={factorData.holdings} />
+        <Card title="Stock Factor Explorer" subtitle="Search and analyze individual stock factor profiles">
+          <StockFactorExplorer holdings={explorerData} />
         </Card>
       )}
     </div>
-  );
-}
-
-// Helper component for factor badges
-function FactorBadge({ value }: { value?: number }) {
-  if (value === undefined) return <span className="text-gray-400">-</span>;
-
-  const isPositive = value >= 0;
-  const intensity = Math.abs(value);
-
-  let bgColor = 'bg-gray-100';
-  let textColor = 'text-gray-600';
-
-  if (intensity >= 1.5) {
-    bgColor = isPositive ? 'bg-green-100' : 'bg-red-100';
-    textColor = isPositive ? 'text-green-700' : 'text-red-700';
-  } else if (intensity >= 0.5) {
-    bgColor = isPositive ? 'bg-green-50' : 'bg-red-50';
-    textColor = isPositive ? 'text-green-600' : 'text-red-600';
-  }
-
-  return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${bgColor} ${textColor}`}>
-      {isPositive ? '+' : ''}
-      {value.toFixed(1)}
-    </span>
   );
 }

@@ -1,10 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   TrendingUp,
   Target,
   PieChart,
   Activity,
   ArrowUpRight,
+  ShieldAlert,
+  TrendingDown,
+  BarChart3,
+  Zap,
 } from 'lucide-react';
 import { Card, KPICard, StatCard } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -13,47 +17,47 @@ import { HoldingsTable } from '../components/charts/HoldingsTable';
 import { PerformanceChart } from '../components/charts/PerformanceChart';
 import { UploadModal } from '../components/modules/UploadModal';
 import { usePortfolioStore } from '../stores/portfolioStore';
-import { localDataApi, type PerformanceRiskData } from '../services/api';
 import { formatPercent } from '../utils/formatters';
 
 export function Overview() {
   const filters = usePortfolioStore((state) => state.filters);
   const currentSnapshot = usePortfolioStore((state) => state.currentSnapshot);
-  const setCurrentSnapshot = usePortfolioStore((state) => state.setCurrentSnapshot);
-  const setHistoricalData = usePortfolioStore((state) => state.setHistoricalData);
+  const performanceData = usePortfolioStore((state) => state.performanceData);
+  const factorData = usePortfolioStore((state) => state.factorData);
+  const riskMetrics = usePortfolioStore((state) => state.riskMetrics);
+  const calculateRiskMetrics = usePortfolioStore((state) => state.calculateRiskMetrics);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [performanceData, setPerformanceData] = useState<PerformanceRiskData | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  // Load data on mount
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-
-        // Load quarters index and top 50 data
-        const quarters = await localDataApi.getQuarters();
-        if (quarters.quarters.length > 0) {
-          const latestQuarter = quarters.quarters.find(q => q.id === quarters.latestQuarter) || quarters.quarters[0];
-          const top50 = await localDataApi.getTop50(latestQuarter.id, filters.marketType);
-          if (top50) {
-            const snapshot = localDataApi.toPortfolioSnapshot(top50);
-            setCurrentSnapshot(snapshot);
-          }
-        }
-
-        // Load performance data
-        const perfData = await localDataApi.getPerformanceRisk();
-        setPerformanceData(perfData);
-        setHistoricalData(localDataApi.toHistoricalData(perfData));
-      } catch (err) {
-        console.error('Failed to load data:', err);
-      } finally {
-        setLoading(false);
-      }
+  // Get holdings info - count only holdings with meaningful portfolio weight (> 0.1%)
+  const holdingsInfo = useMemo(() => {
+    if (currentSnapshot?.holdings?.length) {
+      // Filter to holdings with meaningful weight (> 0.1% = 0.001 in decimal)
+      const activeHoldings = currentSnapshot.holdings.filter(h => h.portfolioWeight > 0.001);
+      const totalWeight = activeHoldings.reduce((sum, h) => sum + h.portfolioWeight, 0);
+      const coveragePercent = (totalWeight * 100).toFixed(1);
+      const isPartial = totalWeight < 0.99; // Less than 99% coverage means it's top N, not all
+      return {
+        count: activeHoldings.length,
+        isTopN: isPartial,
+        coverage: coveragePercent,
+      };
     }
-    loadData();
-  }, [filters.marketType, setCurrentSnapshot, setHistoricalData]);
+    if (factorData?.holdings?.length) {
+      return {
+        count: factorData.holdings.length,
+        isTopN: true,
+        coverage: null,
+      };
+    }
+    return null;
+  }, [currentSnapshot?.holdings, factorData?.holdings]);
+
+  // Calculate risk metrics when data changes
+  useEffect(() => {
+    if ((performanceData || factorData) && !riskMetrics) {
+      calculateRiskMetrics();
+    }
+  }, [performanceData, factorData, riskMetrics, calculateRiskMetrics]);
 
   // Memoize derived data to prevent infinite loops
   const statistics = useMemo(
@@ -96,24 +100,16 @@ export function Overview() {
       }));
   }, [performanceData]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terebinth-primary mx-auto"></div>
-          <p className="mt-4 text-gray-500">Loading dashboard data...</p>
-        </div>
-      </div>
-    );
-  }
+  // Check if we have any uploaded data
+  const hasData = currentSnapshot || performanceData;
 
-  // Show empty state if no data loaded
-  if (!currentSnapshot && !performanceData) {
+  // Show empty state if no uploaded data
+  if (!hasData) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
         <EmptyState
           title="No Portfolio Data"
-          description="Upload your portfolio Excel file to view the dashboard with holdings, allocations, and performance metrics."
+          description="Upload your Excel files to view the dashboard. Start by uploading your TOP 50 Holdings file, Performance & Risk file, or Portfolio Composition file."
           onUploadClick={() => setIsUploadModalOpen(true)}
         />
         <UploadModal
@@ -137,10 +133,9 @@ export function Overview() {
             {currentSnapshot?.quarterLabel && ` - ${currentSnapshot.quarterLabel}`}
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-sm text-green-700 font-medium">Live Data</span>
-        </div>
+        <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+          Uploaded Data
+        </span>
       </div>
 
       {/* KPI Cards */}
@@ -167,21 +162,55 @@ export function Overview() {
           icon={<Activity className="w-5 h-5" />}
         />
         <KPICard
-          label="Holdings"
-          value={statistics?.numberOfStocks ?? '-'}
-          changeLabel={`Eff: ${statistics?.effectiveNumberOfStocks?.toFixed(1) ?? '-'}`}
+          label={holdingsInfo?.isTopN ? "Top Holdings" : "Holdings"}
+          value={holdingsInfo?.count ?? '-'}
+          changeLabel={holdingsInfo?.isTopN ? `${holdingsInfo.coverage}% of portfolio` : `Eff: ${statistics?.effectiveNumberOfStocks?.toFixed(1) ?? '-'}`}
           trend="neutral"
           icon={<PieChart className="w-5 h-5" />}
         />
       </div>
 
+      {/* Risk KPI Cards */}
+      {riskMetrics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KPICard
+            label="VaR (95%)"
+            value={`${riskMetrics.var95.toFixed(1)}%`}
+            changeLabel="Monthly Value at Risk"
+            trend={riskMetrics.var95 < 5 ? 'up' : 'down'}
+            icon={<ShieldAlert className="w-5 h-5" />}
+          />
+          <KPICard
+            label="Max Drawdown"
+            value={`${riskMetrics.maxDrawdown.toFixed(1)}%`}
+            changeLabel={riskMetrics.maxDrawdownDate}
+            trend="down"
+            icon={<TrendingDown className="w-5 h-5" />}
+          />
+          <KPICard
+            label="Sharpe Ratio"
+            value={riskMetrics.sharpeRatio.toFixed(2)}
+            changeLabel="Risk-adjusted return"
+            trend={riskMetrics.sharpeRatio >= 1 ? 'up' : riskMetrics.sharpeRatio >= 0.5 ? 'neutral' : 'down'}
+            icon={<BarChart3 className="w-5 h-5" />}
+          />
+          <KPICard
+            label="Beta"
+            value={riskMetrics.beta.toFixed(2)}
+            changeLabel="vs Benchmark"
+            trend={riskMetrics.beta <= 1.1 && riskMetrics.beta >= 0.9 ? 'up' : 'neutral'}
+            icon={<Zap className="w-5 h-5" />}
+          />
+        </div>
+      )}
+
       {/* Performance Chart */}
-      <Card title="Portfolio Performance" subtitle="$100 invested (last 2 years)">
+      <Card title="Portfolio Performance" subtitle="Growth over last 2 years">
         {chartData.length > 0 ? (
           <PerformanceChart data={chartData} title="" height={350} />
         ) : (
           <div className="h-[350px] flex items-center justify-center text-gray-400 bg-gray-50 rounded-lg">
-            <p className="text-sm">No performance data available</p>
+            <p className="text-sm">Upload Performance & Risk data to see the chart</p>
           </div>
         )}
       </Card>
@@ -197,7 +226,7 @@ export function Overview() {
             />
           ) : (
             <div className="h-[300px] flex items-center justify-center text-gray-400">
-              No sector allocation data
+              Upload TOP 50 Holdings to see sector allocation
             </div>
           )}
         </Card>
@@ -209,7 +238,7 @@ export function Overview() {
             />
           ) : (
             <div className="h-[300px] flex items-center justify-center text-gray-400">
-              No country allocation data
+              Upload TOP 50 Holdings to see country allocation
             </div>
           )}
         </Card>
@@ -252,7 +281,7 @@ export function Overview() {
           <HoldingsTable data={topHoldings} maxRows={10} />
         ) : (
           <div className="py-8 text-center text-gray-400">
-            No holdings data available
+            Upload TOP 50 Holdings to see holdings data
           </div>
         )}
       </Card>

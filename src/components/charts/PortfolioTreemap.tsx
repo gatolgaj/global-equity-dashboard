@@ -97,13 +97,16 @@ export function PortfolioTreemap({
 
     const colors = groupBy === 'sector' ? SECTOR_COLORS : REGION_COLORS;
 
+    // Filter out holdings with 0% weight
+    const activeHoldings = holdings.filter((h) => (h.weight || 0) > 0);
+
     // Group holdings
     const groups: Record<
       string,
       { totalWeight: number; holdings: Holding[]; avgMfm: number }
     > = {};
 
-    holdings.forEach((h) => {
+    activeHoldings.forEach((h) => {
       const groupKey = h[groupBy] || 'Unknown';
       if (!groups[groupKey]) {
         groups[groupKey] = { totalWeight: 0, holdings: [], avgMfm: 0 };

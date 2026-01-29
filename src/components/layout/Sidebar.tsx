@@ -9,6 +9,12 @@ import {
   X,
   Presentation,
   Radar,
+  ShieldAlert,
+  Crosshair,
+  SlidersHorizontal,
+  Zap,
+  Shield,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -23,9 +29,14 @@ const navigationItems = [
     icon: LayoutDashboard,
   },
   {
-    name: 'Performance & Risk',
+    name: 'Performance',
     href: '/performance',
     icon: TrendingUp,
+  },
+  {
+    name: 'Risk Analysis',
+    href: '/risk',
+    icon: ShieldAlert,
   },
   {
     name: 'Portfolio Composition',
@@ -38,9 +49,19 @@ const navigationItems = [
     icon: Radar,
   },
   {
-    name: 'Top 50 Holdings',
+    name: 'Holdings',
     href: '/holdings',
     icon: List,
+  },
+  {
+    name: 'Optimisation',
+    href: '/optimisation',
+    icon: Crosshair,
+  },
+  {
+    name: 'Active Risk',
+    href: '/active-risk',
+    icon: Shield,
   },
   {
     name: 'Reports',
@@ -51,6 +72,21 @@ const navigationItems = [
     name: 'Presentation',
     href: '/presentation',
     icon: Presentation,
+  },
+  {
+    name: 'Opt. Presentation',
+    href: '/optimisation-presentation',
+    icon: SlidersHorizontal,
+  },
+  {
+    name: 'Risk Presentation',
+    href: '/active-risk-presentation',
+    icon: ShieldCheck,
+  },
+  {
+    name: 'Momentum NSN',
+    href: '/momentum-nsn',
+    icon: Zap,
   },
 ];
 

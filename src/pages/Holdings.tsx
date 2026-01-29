@@ -11,12 +11,12 @@ export function Holdings() {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  // Memoize derived data to prevent infinite loops
+  // Memoize derived data - filter to holdings with meaningful weight (>0.1%)
   const topHoldings = useMemo(() => {
     if (!currentSnapshot?.holdings) return [];
     return [...currentSnapshot.holdings]
-      .sort((a, b) => b.portfolioWeight - a.portfolioWeight)
-      .slice(0, 50);
+      .filter((h) => h.portfolioWeight > 0.001) // >0.1% weight
+      .sort((a, b) => b.portfolioWeight - a.portfolioWeight);
   }, [currentSnapshot?.holdings]);
 
   const quadrantData = useMemo(() => {
@@ -34,7 +34,7 @@ export function Holdings() {
       <div className="flex flex-col items-center justify-center h-full">
         <EmptyState
           title="No Holdings Data"
-          description="Upload your portfolio Excel file to view the top 50 holdings with TC 4-Quadrant analysis."
+          description="Upload your portfolio Excel file to view all holdings with TC 4-Quadrant analysis."
           onUploadClick={() => setIsUploadModalOpen(true)}
         />
         <UploadModal
@@ -49,9 +49,9 @@ export function Holdings() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Top 50 Holdings</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Portfolio Holdings</h1>
         <p className="text-gray-500 mt-1">
-          Point-in-time portfolio analysis
+          {topHoldings.length} positions with meaningful weight
           {currentSnapshot.quarterLabel && ` - ${currentSnapshot.quarterLabel}`}
         </p>
       </div>
@@ -119,7 +119,7 @@ export function Holdings() {
       <Card title="All Holdings" subtitle={`${topHoldings.length} positions sorted by portfolio weight`}>
         <HoldingsTable
           data={topHoldings}
-          maxRows={50}
+          maxRows={100}
           onStockClick={setSelectedStock}
         />
       </Card>

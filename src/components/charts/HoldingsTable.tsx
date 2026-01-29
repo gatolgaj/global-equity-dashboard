@@ -133,7 +133,9 @@ export function HoldingsTable({
   );
 
   const tableData = useMemo(() => {
-    let sortedData = [...data].sort(
+    // Filter out holdings with 0% portfolio weight
+    let filteredData = data.filter((stock) => stock.portfolioWeight > 0);
+    let sortedData = filteredData.sort(
       (a, b) => b.portfolioWeight - a.portfolioWeight
     );
     if (maxRows) {

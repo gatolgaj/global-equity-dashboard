@@ -8,6 +8,7 @@ import {
   Upload,
   Calendar,
   LogOut,
+  Trash2,
 } from 'lucide-react';
 import { usePortfolioStore } from '../../stores/portfolioStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -21,7 +22,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick, onUploadClick }: HeaderProps) {
   const navigate = useNavigate();
-  const { filters, setMarketType, currentSnapshot } = usePortfolioStore();
+  const { filters, setMarketType, currentSnapshot, clearAllData, performanceData, compositionData } = usePortfolioStore();
   const logout = useAuthStore((state) => state.logout);
   const [marketDropdownOpen, setMarketDropdownOpen] = useState(false);
 
@@ -118,6 +119,22 @@ export function Header({ onMenuClick, onUploadClick }: HeaderProps) {
 
         {/* Right section */}
         <div className="flex items-center gap-2">
+          {/* Clear Data button - only show when there's data */}
+          {(currentSnapshot || performanceData || compositionData) && (
+            <button
+              onClick={() => {
+                if (window.confirm('Clear all uploaded data? This cannot be undone.')) {
+                  clearAllData();
+                }
+              }}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+              title="Clear all uploaded data"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Clear Data</span>
+            </button>
+          )}
+
           <button
             onClick={onUploadClick}
             className="btn-primary flex items-center gap-2"

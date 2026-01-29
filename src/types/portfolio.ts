@@ -139,3 +139,51 @@ export interface RiskMetrics {
   maxDrawdown: number;
   varOneDay: number; // Value at Risk
 }
+
+// Factor Analysis types
+export interface FactorScores {
+  value: number;
+  growth: number;
+  quality: number;
+  debt: number;
+  volatility: number;
+  momentum: number;
+  size: number;
+  sentiment: number;
+  mfmScore: number;
+}
+
+export interface FactorHolding {
+  ticker: string;
+  company: string;
+  sector: string;
+  country: string;
+  region: string;
+  portfolioWeight: number;
+  benchmarkWeight: number;
+  activeWeight: number;
+  factors: FactorScores;
+}
+
+export interface SectorFactorData {
+  sector: string;
+  count: number;
+  totalWeight: number;
+  value: number;
+  growth: number;
+  quality: number;
+  debt: number;
+  volatility: number;
+  momentum: number;
+  size: number;
+  sentiment: number;
+  mfmScore: number;
+}
+
+export interface FactorData {
+  asOfDate: string;
+  holdings: FactorHolding[];
+  portfolioAverages: FactorScores;
+  benchmarkAverages: FactorScores;
+  sectorFactors: SectorFactorData[];
+}

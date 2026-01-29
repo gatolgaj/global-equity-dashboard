@@ -68,14 +68,16 @@ export function KPICard({
         <div className="flex-1">
           <p className="metric-label">{label}</p>
           <p className="metric-value mt-1">{value}</p>
-          {change !== undefined && (
+          {(change !== undefined || changeLabel) && (
             <div className="flex items-center gap-1 mt-2">
-              <span
-                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTrendBg()} ${getTrendColor()}`}
-              >
-                {change > 0 ? '+' : ''}
-                {typeof change === 'number' ? change.toFixed(2) : change}%
-              </span>
+              {change !== undefined && (
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTrendBg()} ${getTrendColor()}`}
+                >
+                  {change > 0 ? '+' : ''}
+                  {typeof change === 'number' ? change.toFixed(2) : change}%
+                </span>
+              )}
               {changeLabel && (
                 <span className="text-xs text-gray-500">{changeLabel}</span>
               )}

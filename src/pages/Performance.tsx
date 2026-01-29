@@ -1,20 +1,17 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, StatCard } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PerformanceChart } from '../components/charts/PerformanceChart';
 import { RollingMetricChart } from '../components/charts/RollingMetricChart';
 import { UploadModal } from '../components/modules/UploadModal';
 import { usePortfolioStore } from '../stores/portfolioStore';
-import { localDataApi, type PerformanceRiskData } from '../services/api';
 import { formatPercent } from '../utils/formatters';
 
 export function Performance() {
   const currentSnapshot = usePortfolioStore((state) => state.currentSnapshot);
-  const setHistoricalData = usePortfolioStore((state) => state.setHistoricalData);
+  const performanceData = usePortfolioStore((state) => state.performanceData);
+
   const [selectedPeriod, setSelectedPeriod] = useState<'1Y' | '3Y' | '5Y' | 'MAX'>('MAX');
-  const [performanceData, setPerformanceData] = useState<PerformanceRiskData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Memoize derived data to prevent infinite loops
@@ -22,29 +19,6 @@ export function Performance() {
     () => currentSnapshot?.statistics ?? null,
     [currentSnapshot?.statistics]
   );
-
-  // Load performance data on mount
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const data = await localDataApi.getPerformanceRisk();
-        setPerformanceData(data);
-
-        // Also update the store with historical data
-        const historicalFormatted = localDataApi.toHistoricalData(data);
-        setHistoricalData(historicalFormatted);
-
-        setError(null);
-      } catch (err) {
-        console.error('Failed to load performance data:', err);
-        setError('Failed to load performance data');
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, [setHistoricalData]);
 
   const periods = [
     { value: '1Y', label: '1 Year' },
@@ -105,23 +79,13 @@ export function Performance() {
     };
   }, [performanceData]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terebinth-primary mx-auto"></div>
-          <p className="mt-4 text-gray-500">Loading performance data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !performanceData) {
+  // Show empty state if no uploaded data
+  if (!performanceData) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
         <EmptyState
           title="No Performance Data"
-          description="Upload your portfolio Excel file to view historical performance, risk metrics, and rolling analytics."
+          description="Upload your IC_Backtest_Returns&Risk Excel file to view historical performance, risk metrics, and rolling analytics."
           onUploadClick={() => setIsUploadModalOpen(true)}
         />
         <UploadModal
@@ -135,12 +99,17 @@ export function Performance() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Performance & Risk</h1>
-        <p className="text-gray-500 mt-1">
-          Historical performance analysis and risk metrics
-          {performanceData?.dateRange && ` (${performanceData.dateRange.start} to ${performanceData.dateRange.end})`}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Performance & Risk</h1>
+          <p className="text-gray-500 mt-1">
+            Historical performance analysis and risk metrics
+            {performanceData?.dateRange && ` (${performanceData.dateRange.start} to ${performanceData.dateRange.end})`}
+          </p>
+        </div>
+        <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+          Uploaded Data
+        </span>
       </div>
 
       {/* Period selector */}

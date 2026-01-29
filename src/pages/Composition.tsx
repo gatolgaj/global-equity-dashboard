@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
 import { AllocationChart, ActiveWeightChart } from '../components/charts/AllocationChart';
 import { CompositionTimeSeriesChart } from '../components/charts/CompositionTimeSeriesChart';
 import { UploadModal } from '../components/modules/UploadModal';
 import { usePortfolioStore } from '../stores/portfolioStore';
-import { localDataApi, type PortfolioCompositionData } from '../services/api';
 import { formatPercent } from '../utils/formatters';
 
 type ViewType = 'absolute' | 'active' | 'time-series';
@@ -13,27 +12,36 @@ type CategoryType = 'sector' | 'country' | 'region';
 
 export function Composition() {
   const currentSnapshot = usePortfolioStore((state) => state.currentSnapshot);
+  const compositionData = usePortfolioStore((state) => state.compositionData);
+  const factorData = usePortfolioStore((state) => state.factorData);
+
+  // Get holdings info - count only holdings with meaningful portfolio weight (> 0.1%)
+  const holdingsInfo = useMemo(() => {
+    if (currentSnapshot?.holdings?.length) {
+      // Filter to holdings with meaningful weight (> 0.1% = 0.001 in decimal)
+      const activeHoldings = currentSnapshot.holdings.filter(h => h.portfolioWeight > 0.001);
+      const totalWeight = activeHoldings.reduce((sum, h) => sum + h.portfolioWeight, 0);
+      const coveragePercent = (totalWeight * 100).toFixed(1);
+      const isPartial = totalWeight < 0.99; // Less than 99% coverage means it's top N, not all
+      return {
+        count: activeHoldings.length,
+        isTopN: isPartial,
+        coverage: coveragePercent,
+      };
+    }
+    if (factorData?.holdings?.length) {
+      return {
+        count: factorData.holdings.length,
+        isTopN: true,
+        coverage: null,
+      };
+    }
+    return null;
+  }, [currentSnapshot?.holdings, factorData?.holdings]);
+
   const [viewType, setViewType] = useState<ViewType>('time-series');
   const [categoryType, setCategoryType] = useState<CategoryType>('region');
-  const [compositionData, setCompositionData] = useState<PortfolioCompositionData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-
-  // Load composition data on mount
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const data = await localDataApi.getPortfolioComposition();
-        setCompositionData(data);
-      } catch (err) {
-        console.error('Failed to load composition data:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
 
   // Memoize derived data to prevent infinite loops
   const statistics = useMemo(
@@ -88,24 +96,13 @@ export function Composition() {
     }
   }, [categoryType, compositionData]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terebinth-primary mx-auto"></div>
-          <p className="mt-4 text-gray-500">Loading composition data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show empty state if no data loaded
-  if (!currentSnapshot && !compositionData) {
+  // Show empty state if no uploaded data
+  if (!compositionData && !currentSnapshot) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
         <EmptyState
           title="No Composition Data"
-          description="Upload your portfolio Excel file to view sector, country, and region allocations over time."
+          description="Upload your IC_PortfolioComposition Excel file to view sector, country, and region allocations over time."
           onUploadClick={() => setIsUploadModalOpen(true)}
         />
         <UploadModal
@@ -119,11 +116,18 @@ export function Composition() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Portfolio Composition</h1>
-        <p className="text-gray-500 mt-1">
-          Sector, country, and region exposure analysis over time
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Portfolio Composition</h1>
+          <p className="text-gray-500 mt-1">
+            Sector, country, and region exposure analysis over time
+          </p>
+        </div>
+        {compositionData && (
+          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+            Uploaded Data
+          </span>
+        )}
       </div>
 
       {/* Controls */}
@@ -255,10 +259,13 @@ export function Composition() {
       <Card title="Portfolio Characteristics">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-500">Total Holdings</p>
+            <p className="text-sm text-gray-500">{holdingsInfo?.isTopN ? 'Top Holdings' : 'Total Holdings'}</p>
             <p className="text-2xl font-bold text-terebinth-dark mt-1">
-              {statistics?.numberOfStocks ?? '-'}
+              {holdingsInfo?.count ?? '-'}
             </p>
+            {holdingsInfo?.isTopN && (
+              <p className="text-xs text-gray-400 mt-1">{holdingsInfo.coverage}% of portfolio</p>
+            )}
           </div>
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-500">Sectors</p>

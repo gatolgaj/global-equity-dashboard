@@ -11,10 +11,12 @@ import {
   Shield,
 } from 'lucide-react';
 import { usePortfolioStore } from '../stores/portfolioStore';
-import { localDataApi, type PerformanceRiskData, type PortfolioCompositionData } from '../services/api';
+import type { PerformanceRiskData, PortfolioCompositionData } from '../services/api';
 import { PerformanceChart } from '../components/charts/PerformanceChart';
 import { RollingMetricChart } from '../components/charts/RollingMetricChart';
 import { CompositionTimeSeriesChart } from '../components/charts/CompositionTimeSeriesChart';
+import { EmptyState } from '../components/ui/EmptyState';
+import { UploadModal } from '../components/modules/UploadModal';
 import { formatPercent } from '../utils/formatters';
 
 interface SlideProps {
@@ -466,42 +468,11 @@ function ConclusionSlide() {
 
 export function Presentation() {
   const currentSnapshot = usePortfolioStore((state) => state.currentSnapshot);
-  const setCurrentSnapshot = usePortfolioStore((state) => state.setCurrentSnapshot);
-  const filters = usePortfolioStore((state) => state.filters);
+  const performanceData = usePortfolioStore((state) => state.performanceData);
+  const compositionData = usePortfolioStore((state) => state.compositionData);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(false);
-  const [performanceData, setPerformanceData] = useState<PerformanceRiskData | null>(null);
-  const [compositionData, setCompositionData] = useState<PortfolioCompositionData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Load data
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const [perfData, compData, quarters] = await Promise.all([
-          localDataApi.getPerformanceRisk(),
-          localDataApi.getPortfolioComposition(),
-          localDataApi.getQuarters(),
-        ]);
-        setPerformanceData(perfData);
-        setCompositionData(compData);
-
-        if (quarters.quarters.length > 0 && !currentSnapshot) {
-          const latestQuarter = quarters.quarters.find((q) => q.id === quarters.latestQuarter) || quarters.quarters[0];
-          const top50 = await localDataApi.getTop50(latestQuarter.id, filters.marketType);
-          if (top50) {
-            setCurrentSnapshot(localDataApi.toPortfolioSnapshot(top50));
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load presentation data:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, [currentSnapshot, filters.marketType, setCurrentSnapshot]);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Auto-play timer
   useEffect(() => {
@@ -558,13 +529,21 @@ export function Presentation() {
     <ConclusionSlide key="conclusion" />,
   ];
 
-  if (loading) {
+  // Check if we have any data to present
+  const hasData = currentSnapshot || performanceData || compositionData;
+
+  if (!hasData) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terebinth-primary mx-auto"></div>
-          <p className="mt-4 text-gray-500">Loading presentation...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
+        <EmptyState
+          title="No Data for Presentation"
+          description="Upload your Excel files to generate the presentation. The presentation will showcase your portfolio performance, composition, and holdings data."
+          onUploadClick={() => setIsUploadModalOpen(true)}
+        />
+        <UploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+        />
       </div>
     );
   }

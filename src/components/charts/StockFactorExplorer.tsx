@@ -49,6 +49,9 @@ export function StockFactorExplorer({ holdings }: StockFactorExplorerProps) {
   const filteredHoldings = useMemo(() => {
     return holdings
       .filter((h) => {
+        // Filter out holdings with 0% weight
+        if ((h.weight || 0) <= 0) return false;
+
         const matchesSearch =
           searchQuery === '' ||
           h.ticker.toLowerCase().includes(searchQuery.toLowerCase()) ||
