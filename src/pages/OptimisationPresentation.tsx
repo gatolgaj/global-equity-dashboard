@@ -83,13 +83,13 @@ function TitleSlide() {
           <img src="/terebinth-logo.png" alt="Terebinth Capital" className="h-16 w-auto" />
         </div>
         <h1 className="text-5xl font-bold mb-4">Portfolio Optimisation</h1>
-        <h2 className="text-3xl font-light text-white/80 mb-6">
+        <h2 className="text-3xl font-light text-white mb-6">
           Customised Active Risk Management
         </h2>
-        <p className="text-lg text-white/60 max-w-2xl mx-auto mb-8">
+        <p className="text-lg text-white/90 max-w-2xl mx-auto mb-8">
           {description || 'Maximise Score subject to TE Target and Sector Active Limits'}
         </p>
-        <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 rounded-full">
+        <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/20 rounded-full">
           <span className="text-xl">30 September 2025</span>
         </div>
       </div>
@@ -658,7 +658,7 @@ function ConclusionSlide() {
           ))}
         </div>
         <div className="mt-10 pt-8 border-t border-white/20">
-          <p className="text-white/60 mb-4">Rooted in Knowledge. We Grow.</p>
+          <p className="text-white/80 mb-4">Rooted in Knowledge. We Grow.</p>
           <div className="inline-block p-3 bg-white rounded-xl">
             <img src="/terebinth-logo.png" alt="Terebinth Capital" className="h-10 w-auto" />
           </div>

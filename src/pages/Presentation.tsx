@@ -55,10 +55,10 @@ function TitleSlide({ quarterLabel }: { quarterLabel: string }) {
           />
         </div>
         <h1 className="text-5xl font-bold mb-4">Global Equity Strategy</h1>
-        <h2 className="text-3xl font-light text-white/80 mb-8">
+        <h2 className="text-3xl font-light text-white mb-8">
           Emerging Markets Portfolio
         </h2>
-        <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 rounded-full">
+        <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/20 rounded-full">
           <span className="text-xl">{quarterLabel}</span>
         </div>
       </div>
@@ -452,7 +452,7 @@ function ConclusionSlide() {
           ))}
         </div>
         <div className="mt-12 pt-8 border-t border-white/20">
-          <p className="text-white/60 mb-4">Thank you for your attention</p>
+          <p className="text-white/80 mb-4">Thank you for your attention</p>
           <div className="inline-block p-3 bg-white rounded-xl">
             <img
               src="/terebinth-logo.png"

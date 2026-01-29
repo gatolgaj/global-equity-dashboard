@@ -93,22 +93,22 @@ function TitleSlide() {
           <Zap className="w-10 h-10 text-amber-400" />
           <h1 className="text-5xl font-bold">Momentum NSN</h1>
         </div>
-        <h2 className="text-3xl font-light text-white/80 mb-6">
+        <h2 className="text-3xl font-light text-white mb-6">
           Portfolio Optimisation
         </h2>
-        <p className="text-lg text-white/60 max-w-2xl mx-auto mb-4">
+        <p className="text-lg text-white/90 max-w-2xl mx-auto mb-4">
           Momentum-based stock selection &mdash; Non-Sector-Neutral approach
         </p>
-        <p className="text-base text-white/40 max-w-xl mx-auto mb-8">
+        <p className="text-base text-white/80 max-w-xl mx-auto mb-8">
           Maximise Momentum Score subject to 3% TE Target, &plusmn;4% Sector Active Limits, and 12% Stock Cap
         </p>
         <div className="flex items-center justify-center gap-4">
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 rounded-full">
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/20 rounded-full">
             <span className="text-xl">30 September 2025</span>
           </div>
-          <div className="inline-flex items-center gap-2 px-4 py-3 bg-amber-500/20 rounded-full border border-amber-400/30">
-            <Zap className="w-4 h-4 text-amber-400" />
-            <span className="text-sm text-amber-300 font-medium">39 Active Positions</span>
+          <div className="inline-flex items-center gap-2 px-4 py-3 bg-amber-500/30 rounded-full border border-amber-400/40">
+            <Zap className="w-4 h-4 text-amber-300" />
+            <span className="text-sm text-amber-200 font-medium">39 Active Positions</span>
           </div>
         </div>
       </div>
@@ -800,7 +800,7 @@ function ConclusionSlide() {
           ))}
         </div>
         <div className="mt-10 pt-8 border-t border-white/20">
-          <p className="text-white/60 mb-4">Rooted in Knowledge. We Grow.</p>
+          <p className="text-white/80 mb-4">Rooted in Knowledge. We Grow.</p>
           <div className="inline-block p-3 bg-white rounded-xl">
             <img src="/terebinth-logo.png" alt="Terebinth Capital" className="h-10 w-auto" />
           </div>

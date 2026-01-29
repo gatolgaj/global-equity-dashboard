@@ -94,27 +94,27 @@ function TitleSlide() {
           <ShieldAlert className="w-10 h-10 text-cyan-400" />
           <h1 className="text-5xl font-bold">Active Risk Management</h1>
         </div>
-        <h2 className="text-3xl font-light text-white/80 mb-6">
+        <h2 className="text-3xl font-light text-white mb-6">
           Customised Portfolio Construction Framework
         </h2>
-        <p className="text-lg text-white/60 max-w-2xl mx-auto mb-8">
+        <p className="text-lg text-white/90 max-w-2xl mx-auto mb-8">
           {description || 'Maximise Score subject to TE Target and Sector Active Limits'}
         </p>
         <div className="flex items-center justify-center gap-4">
-          <div className="inline-flex items-center gap-2 px-5 py-3 bg-white/10 rounded-full">
-            <Target className="w-4 h-4 text-cyan-400" />
+          <div className="inline-flex items-center gap-2 px-5 py-3 bg-white/20 rounded-full">
+            <Target className="w-4 h-4 text-cyan-300" />
             <span className="text-base">TE Target: {formatPct(settings['TE Target'] || 0.03, 0)}</span>
           </div>
-          <div className="inline-flex items-center gap-2 px-5 py-3 bg-white/10 rounded-full">
-            <Layers className="w-4 h-4 text-cyan-400" />
+          <div className="inline-flex items-center gap-2 px-5 py-3 bg-white/20 rounded-full">
+            <Layers className="w-4 h-4 text-cyan-300" />
             <span className="text-base">Sector Limit: &plusmn;{formatPct(settings['Sector Active Limit'] || 0.04, 0)}</span>
           </div>
-          <div className="inline-flex items-center gap-2 px-5 py-3 bg-white/10 rounded-full">
-            <Gauge className="w-4 h-4 text-cyan-400" />
+          <div className="inline-flex items-center gap-2 px-5 py-3 bg-white/20 rounded-full">
+            <Gauge className="w-4 h-4 text-cyan-300" />
             <span className="text-base">Stock Cap: {formatPct(settings['Stock Weight Limit'] || 0.12, 0)}</span>
           </div>
         </div>
-        <p className="mt-6 text-white/40">30 September 2025</p>
+        <p className="mt-6 text-white/80">30 September 2025</p>
       </div>
     </div>
   );
@@ -812,7 +812,7 @@ function ConclusionSlide() {
           ))}
         </div>
         <div className="mt-10 pt-8 border-t border-white/20">
-          <p className="text-white/60 mb-4">Rooted in Knowledge. We Grow.</p>
+          <p className="text-white/80 mb-4">Rooted in Knowledge. We Grow.</p>
           <div className="inline-block p-3 bg-white rounded-xl">
             <img src="/terebinth-logo.png" alt="Terebinth Capital" className="h-10 w-auto" />
           </div>
